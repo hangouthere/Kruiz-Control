@@ -1,1 +1,10 @@
-sample.txt
+_utils.txt
+_init.txt
+greetings.txt
+lols.txt
+randomListCommands.txt
+interval_support.txt
+streamlabs.txt
+misc.txt
+
+tts.txt

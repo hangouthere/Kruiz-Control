@@ -1,0 +1,23 @@
+OnInit
+    SetIntervalSupport
+
+# On every incoming message, if it's a non-IgnoredUser, then we want to update the interval value
+OnEveryChatMessage
+    CheckIgnoredUsers
+    Variable Load _IgnoreCurrentUser_
+    if {_IgnoreCurrentUser_} = false
+    SetIntervalSupport
+
+# The interval support value stores the last date anyone was registered as speaking
+OnAction SetIntervalSupport
+    Function 'return { now: Date.now() }'
+    Variable Set _IntervalSupport_ [now]
+
+# Every (just shy of) 5 minutes, display some Support message,
+# but only if someone has spoken since the last Support message check
+OnTimer IntervalSupport 290
+    Variable Load _IntervalSupport_
+    Function 'return { elapsed: (Date.now() - +[_IntervalSupport_]) / 1000 }'
+    # Only message chat if someone has spoken in last n-seconds
+    if {elapsed} < 300
+    Random "SaySupport" "SayDiscord" "SayTwitter" "SayInstagram"

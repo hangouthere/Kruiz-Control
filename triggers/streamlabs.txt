@@ -1,0 +1,25 @@
+####################################################################
+## StreamLabs Triggers
+
+# Action for when a tip is recieved, which will respond both in chat and TTS with
+# a randomized response
+OnAction TipRecieved
+    Param Copy in1 user
+    Param Copy in2 amount
+    ChatRandomFromFile thanksDono
+
+# When Bits are recieved, we call `TipRecieved` with the pertinent parameters
+OnSLTwitchBitsNoSync
+    TipRecieved {user} "{amount} Bits"
+
+# When Donations are recieved, we call `TipRecieved` with the pertinent parameters
+OnSLDonationNoSync
+    TipRecieved {user} {formatted}
+
+# When a User Follows, we thank them with a randomized response
+OnSLTwitchFollowNoSync
+    ChatRandomFromFile thanksFollow
+
+# When a Streamer Raids, we thank them with a randomized response
+OnSLTwitchRaidNoSync
+    ChatRandomFromFile thanksRaid
