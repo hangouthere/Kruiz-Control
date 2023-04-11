@@ -7,4 +7,6 @@ interval_support.txt
 streamlabs.txt
 misc.txt
 
+cooking.txt
+
 tts.txt

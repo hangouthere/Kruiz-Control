@@ -1,0 +1,39 @@
+# Action to set the Menu Browser Source
+OnAction SetMenu
+    Param Copy in1 MenuUUID
+    Param Exists MenuUUID
+    If 2 {exists} = false
+        Chat Send "You must supply a Menu UUID"
+        Exit
+    #
+    Param Create URL "http://127.0.0.1:5500/index.html"
+    OBS Source "Menu Browser Source"  URL "{URL}?menu={MenuUUID}"
+    Chat Send "Set Menu: {MenuUUID}"
+
+# Action to set the Recipe Browser Source
+OnAction SetRecipe
+    Param Copy in1 RecipeUUID
+    Param Exists RecipeUUID
+    If 2 {exists} = false
+        Chat Send "You must supply a Recipe UUID"
+        Exit
+    #
+    Param Create URL "http://127.0.0.1:5501/index.html"
+    OBS Source "Recipe Browser Source"  URL "{URL}?recipe={RecipeUUID}"
+    Chat Send "Set Recipe: {RecipeUUID}"
+
+# Command for setting the current Menu and *optionally* the first recipe
+OnCommand sm 0 !setMenu
+    SetMenu {arg1}
+    # Set Recipe if passed in
+    Param Copy arg2 RecipeUUID
+    Param Exists RecipeUUID
+    If {exists} = true
+    SetRecipe {RecipeUUID}
+
+# Command for setting the current Recipe
+OnCommand sm 0 !setRecipe
+    SetRecipe {arg1}
+
+#OnEveryChatMessage 
+#    OBS Refresh "Menu Browser Source" 

@@ -2,3 +2,7 @@
 OnCommand e 60 !time !date
     SetCurrentDateTime
     Chat Send "The Current time is: {_currentDateTime_}"
+
+# Reset Kruiz Control
+OnCommand sm 0 !kcreset
+    Reset
