@@ -5,4 +5,5 @@ OnCommand e 60 !time !date
 
 # Reset Kruiz Control
 OnCommand sm 0 !kcreset
+    OBS Send "kcreset"
     Reset

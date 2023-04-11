@@ -1,0 +1,23 @@
+OnAction SetStartStreamTime
+    Function 'return { now: new Date().getTime() }'
+    Variable Set _StartStreamTime_ {now}
+
+OnAction EvalElapsedTime
+    Param Copy in1 startTime
+    Function 'return { elapsed: (Date.now() - +[_StartStreamTime_]) / 1000 }'
+    Function 'const e=[elapsed],H=Math.floor(e/3600),M=Math.floor(e%3600/60),S=Math.floor(e%60);let R=""; return H>0&&(R+=`${H} Hours, `),H>0||M>0&&(R+=`${M} Minutes, `),R+=`${S} Seconds`,{elapsedLabel:R};'
+    Variable Set _elapsedLabel_ {elapsedLabel}
+
+OnOBSStreamStarted
+    SetStartStreamTime
+
+OnCommand sm 0 !fakeUptime
+    SetStartStreamTime
+    Variable Load _StartStreamTime_
+    Chat Send "Faked Uptime to: {_StartStreamTime_}"
+
+OnCommand e 5 !uptime !streamtime
+    Variable Load _StartStreamTime_
+    EvalElapsedTime {_StartStreamTime_}
+    Variable Load _elapsedLabel_
+    Chat Send "Current Uptime is: {_elapsedLabel_}"

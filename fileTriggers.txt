@@ -6,6 +6,7 @@ randomListCommands.txt
 interval_support.txt
 streamlabs.txt
 misc.txt
+uptime.txt
 
 cooking.txt
 

@@ -35,5 +35,40 @@ OnCommand sm 0 !setMenu
 OnCommand sm 0 !setRecipe
     SetRecipe {arg1}
 
-#OnEveryChatMessage 
-#    OBS Refresh "Menu Browser Source" 
+# Chatter command for showing Menu (if allowed)
+OnCommand e 60 !menu !showMenu
+    Variable Global Load IsCookingShow
+    if 2 {IsCookingShow} = "No variable found"
+        Chat Send "Sorry, we're not cooking during this stream!"
+        Exit
+    OBS Send "ChatShowMenu"
+
+# Chatter command for showing Recipe (if allowed)
+OnCommand e 60 !recipe !showRecipe
+    Variable Global Load IsCookingShow
+    if 2 {IsCookingShow} = "No variable found"
+        Chat Send "Sorry, we're not cooking during this stream!"
+        Exit
+    OBS Send "ChatShowRecipe"
+
+# Toggle Cooking Show abilities
+OnCommand sm 0 !cooking
+    Param Keyword after "on" "yes" "enable"
+    if 2 {matched} = true
+        Variable Global Set IsCookingShow 1
+        Chat Send "Enabled Cooking Show!"
+    #
+    Param Keyword after "off" "no" "disable"
+    if 2 {matched} = true
+        Variable Global Remove IsCookingShow
+        Chat Send "Disabled Cooking Show!"
+
+# Streamer/Mod Command for showing Menu (auto enables Cooking Show)
+OnCommand sm 0 !mmenu !mshowMenu
+    Variable Global Set IsCookingShow 1
+    OBS Send "ChatShowMenu"
+
+# Streamer/Mod Command for showing Recipe (auto enables Cooking Show)
+OnCommand sm 0 !mrecipe !mshowRecipe
+    Variable Global Set IsCookingShow 1
+    OBS Send "ChatShowRecipe"
