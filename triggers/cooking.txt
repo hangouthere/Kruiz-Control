@@ -6,7 +6,7 @@ OnAction SetMenu
         Chat Send "You must supply a Menu UUID"
         Exit
     #
-    Param Create URL "http://127.0.0.1:5500/index.html"
+    Param Create URL "http://obs-overlays.home/overlay-menu/index.html"
     OBS Source "Menu Browser Source"  URL "{URL}?menu={MenuUUID}"
     Chat Send "Set Menu: {MenuUUID}"
 
@@ -18,7 +18,7 @@ OnAction SetRecipe
         Chat Send "You must supply a Recipe UUID"
         Exit
     #
-    Param Create URL "http://127.0.0.1:5501/index.html"
+    Param Create URL "http://obs-overlays.home/overlay-recipe/index.html"
     OBS Source "Recipe Browser Source"  URL "{URL}?recipe={RecipeUUID}"
     Chat Send "Set Recipe: {RecipeUUID}"
 
