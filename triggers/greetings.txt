@@ -1,7 +1,8 @@
 OnAction GreetingSpeak
     Param Copy in1 messageToSpeak
-    Param Create GreetingVoice "Google UK English Female"
-    TTS {GreetingVoice} - - - nowait {messageToSpeak}
+    Param Create Voice "Google UK English Female"
+    Param Replace messageToSpeak '@' ''
+    TTS {Voice} - - - nowait {messageToSpeak}
 
 # On every incoming message, check for common greetings and respond both in chat and TTS with
 # a randomized response!

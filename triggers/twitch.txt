@@ -1,0 +1,46 @@
+####################################################################
+# Twitch Commands
+#
+# Be sure to have the following OAuth Roles allocated for your Access Token:
+# (see `twitchApi.txt` for more info)
+#
+# - moderator:manage:shoutouts
+
+# Say a Shoutout Aloud
+OnAction ShoutoutVoice
+    Param Copy in1 messageToSpeak
+    Param Create Voice "Google UK English Female"
+    Param Replace messageToSpeak '@' ''
+    TTS {Voice} - - - nowait {messageToSpeak}
+
+OnAction TwitchShoutout
+    # Firts we have to get the BroadcasterId of that whom we want to shout out
+    Param Copy in1 Username
+    GetBroadcasterId {Username}
+    # Do Shoutout via Twitch API
+    Variable Global Load TwitchAPI_broadcasterId_streamer
+    Variable Global Load TwitchAPI_broadcasterId_bot
+    Param Copy _TwitchAPI_broadcasterId_found_ BroadcasterId
+    TwitchResetAPIValues
+    List Add _TwitchAPI_Params_ "from_broadcaster_id"
+    List Add _TwitchAPI_Params_ {TwitchAPI_broadcasterId_streamer}
+    List Add _TwitchAPI_Params_ "moderator_id"
+    List Add _TwitchAPI_Params_ {TwitchAPI_broadcasterId_bot}
+    List Add _TwitchAPI_Params_ "to_broadcaster_id"
+    List Add _TwitchAPI_Params_ {BroadcasterId}
+    ExecTwitchAPI "Shoutout" "POST" "chat/shoutouts"
+
+# Perform a Shoutout in Chat and TwitchAPI
+# Supports @username and username alike!
+OnCommand bm 0 !so !shoutout
+    Param Copy after ShoutoutUser
+    Param Replace ShoutoutUser "@" ""
+    GetChannelInfo {ShoutoutUser}
+    # Break out if errored, already displayed the error in chat
+    If {_TwitchAPI_Response_} != "error"
+    Function 'const channelInfo = {_TwitchAPI_Response_}.data[0]; const { broadcaster_name, game_name, title } = channelInfo; return { broadcaster_name, game_name, title }'
+    Chat Send "@{broadcaster_name} was last seen doing some {game_name} - {title}"
+    ChooseRandomLineFromFile "shoutouts"
+    Chat Send {_randomChosen_}
+    ShoutoutVoice {_randomChosen_}
+    TwitchShoutout {ShoutoutUser}

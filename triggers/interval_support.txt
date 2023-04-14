@@ -11,7 +11,7 @@ OnEveryChatMessage
 # The interval support value stores the last date anyone was registered as speaking
 OnAction SetIntervalSupport
     Function 'return { now: Date.now() }'
-    Variable Set _IntervalSupport_ [now]
+    Variable Set _IntervalSupport_ {now}
 
 # Every (just shy of) 5 minutes, display some Support message,
 # but only if someone has spoken since the last Support message check

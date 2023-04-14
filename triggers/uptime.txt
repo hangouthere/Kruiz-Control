@@ -11,7 +11,7 @@ OnAction EvalElapsedTime
 OnOBSStreamStarted
     SetStartStreamTime
 
-OnCommand sm 0 !fakeUptime
+OnCommand bm 0 !fakeUptime
     SetStartStreamTime
     Variable Load _StartStreamTime_
     Chat Send "Faked Uptime to: {_StartStreamTime_}"

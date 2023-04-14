@@ -73,14 +73,19 @@ OnAction CompareArrays
     List Add _CompareArrays_ {matched}
     List Add _CompareArrays_ {word}
 
+# Chooses a random line from a list on disk, and sets it to `_randomChosen_` to be used later
+OnAction ChooseRandomLineFromFile
+    Param Copy in1 listName
+    List Empty _randomList_
+    ImportListFromDisk {listName} _randomList_
+    List Remove _randomList_
+    Variable Set _randomChosen_ {value}
+
 # Says a random entry from a list on disk
 # Files are located at: './lists/{fileName}.txt'
 # Example:
 #   ChatRandomFromFile greetings
 OnAction ChatRandomFromFile
     Param Copy in1 listName
-    List Empty _randomList_
-    ImportListFromDisk {listName} _randomList_
-    List Remove _randomList_
-    Variable Set _randomChosen_ {value}
+    ChooseRandomLineFromFile {listName}
     Chat Send {_randomChosen_}

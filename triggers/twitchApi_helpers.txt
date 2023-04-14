@@ -1,0 +1,63 @@
+####################################################################
+# Twitch API Helpers
+#
+# These Actions are common Helpers that can be used for a plethora of other API calls, so we're holding
+# them here to keep them cleanly separated from the acutal API methods, or custom API calls for bots.
+#
+##################################
+# Common Variables to Know
+#
+# There are a few variables used within these Actions that you will use somewhat frequently, so I wanted to point
+# them out and explain their intent.
+#
+# TwitchAPI_broadcasterId_streamer - Broadcaster ID of the Streamer account
+
+# On Init of bot, attempt to get the Broadcaster ID
+OnInit
+    GetMyBroadcasterIds
+
+OnAction GetMyBroadcasterIds
+    TwitchResetAPIValues
+    # Exit early if necessary
+    Variable Global Load TwitchAPI_broadcasterId_streamer
+    Variable Global Load TwitchAPI_broadcasterId_bot
+    If 2 {TwitchAPI_broadcasterId_streamer} = "No variable found"
+        GetBroadcasterId {TwitchAPI_StreamerName}
+        Variable Global Set TwitchAPI_broadcasterId_streamer {_TwitchAPI_broadcasterId_found_}
+    If 2 {TwitchAPI_broadcasterId_bot} = "No variable found"
+        GetBroadcasterId {TwitchAPI_BotName}
+        Variable Global Set TwitchAPI_broadcasterId_bot {_TwitchAPI_broadcasterId_found_}
+
+# If unavailable, retrieves the Broadcaster ID and stores in a Global variable
+OnAction GetBroadcasterId
+    Param Copy in1 BroadcasterId
+    TwitchResetAPIValues
+    List Add _TwitchAPI_Params_ "login"
+    List Add _TwitchAPI_Params_ {BroadcasterId}
+    ExecTwitchAPI "Get Users" "GET" "users"
+    # Break out if errored, already displayed the error in chat
+    If {_TwitchAPI_Response_} != "error"
+    Function 'return {_TwitchAPI_Response_}.data.length > 0 ? { userId: {_TwitchAPI_Response_}.data[0].id } :  { userId: "Invalid User" }'
+    Variable Set _TwitchAPI_broadcasterId_found_ {userId}
+    If 2 {_TwitchAPI_broadcasterId_found_} = "Invalid User"
+        Chat Send "Invalid User: {after}"
+        Exit
+
+# Gets a Channel Info by UserName
+OnAction GetChannelInfo
+    Param Copy in1 Username
+    # Get the BroadcasterId for the user we're shouting out
+    GetBroadcasterId {Username}
+    # Get Channel Info for the found BroadcasterId
+    Param Copy _TwitchAPI_broadcasterId_found_ BroadcasterId
+    TwitchResetAPIValues
+    List Add _TwitchAPI_Params_ "broadcaster_id"
+    List Add _TwitchAPI_Params_ {BroadcasterId}
+    ExecTwitchAPI "Get Channel Info (shoutout)" "GET" "channels"
+
+# Command to update TokenUpdated time manually
+# The Last Updated Token stores the last date we manually updated the API Tokens from TwitchTokenGenerator
+OnCommand bm 0 !tokenUpdate !updateToken
+    Function 'return { now: Date.now() }'
+    Variable Global Set _TokensUpdatedAt_ {now}
+    GetMyBroadcasterIds

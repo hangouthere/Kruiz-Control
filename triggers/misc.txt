@@ -3,7 +3,12 @@ OnCommand e 60 !time !date
     SetCurrentDateTime
     Chat Send "The Current time is: {_currentDateTime_}"
 
+# Silly ^ command
+OnCommand e 5 ^ ^^
+    Chat Send {command}
+    Chat Send {botUserID}
+
 # Reset Kruiz Control
-OnCommand sm 0 !kcreset
+OnCommand bm 0 !kcreset
     OBS Send "kcreset"
     Reset
