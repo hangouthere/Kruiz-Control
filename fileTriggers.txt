@@ -8,6 +8,8 @@ streamlabs.txt
 misc.txt
 uptime.txt
 
+lighting.txt
+
 twitchApi.txt
 twitchApi_helpers.txt
 twitch.txt

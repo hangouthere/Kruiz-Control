@@ -23,37 +23,74 @@ OnAction GetMyBroadcasterIds
     Variable Global Load TwitchAPI_broadcasterId_bot
     If 2 {TwitchAPI_broadcasterId_streamer} = "No variable found"
         GetBroadcasterId {TwitchAPI_StreamerName}
-        Variable Global Set TwitchAPI_broadcasterId_streamer {_TwitchAPI_broadcasterId_found_}
+        Variable Global Set TwitchAPI_broadcasterId_streamer {_TwitchAPI_Found_BroadcasterId_}
     If 2 {TwitchAPI_broadcasterId_bot} = "No variable found"
         GetBroadcasterId {TwitchAPI_BotName}
-        Variable Global Set TwitchAPI_broadcasterId_bot {_TwitchAPI_broadcasterId_found_}
+        Variable Global Set TwitchAPI_broadcasterId_bot {_TwitchAPI_Found_BroadcasterId_}
 
 # If unavailable, retrieves the Broadcaster ID and stores in a Global variable
 OnAction GetBroadcasterId
-    Param Copy in1 BroadcasterId
+    Param Copy in1 Username
+    Param Replace Username "@" ""
     TwitchResetAPIValues
     List Add _TwitchAPI_Params_ "login"
-    List Add _TwitchAPI_Params_ {BroadcasterId}
+    List Add _TwitchAPI_Params_ {Username}
     ExecTwitchAPI "Get Users" "GET" "users"
     # Break out if errored, already displayed the error in chat
     If {_TwitchAPI_Response_} != "error"
     Function 'return {_TwitchAPI_Response_}.data.length > 0 ? { userId: {_TwitchAPI_Response_}.data[0].id } :  { userId: "Invalid User" }'
-    Variable Set _TwitchAPI_broadcasterId_found_ {userId}
-    If 2 {_TwitchAPI_broadcasterId_found_} = "Invalid User"
+    Variable Set _TwitchAPI_Found_BroadcasterId_ {userId}
+    If 2 {_TwitchAPI_Found_BroadcasterId_} = "Invalid User"
         Chat Send "Invalid User: {after}"
         Exit
 
 # Gets a Channel Info by UserName
 OnAction GetChannelInfo
     Param Copy in1 Username
-    # Get the BroadcasterId for the user we're shouting out
+    Param Replace Username "@" ""
+    # Get Channel Info for the found Username
+    TwitchResetAPIValues
+    List Add _TwitchAPI_Params_ "query"
+    List Add _TwitchAPI_Params_ {Username}
+    List Add _TwitchAPI_Params_ "first"
+    List Add _TwitchAPI_Params_ 1
+    ExecTwitchAPI "Get Channel Info" "GET" "search/channels"
+
+# Performs a formal Twitch Shoutout via API
+OnAction TwitchShoutout
+    # First we have to get the BroadcasterId of whom we want to shout out
+    Param Copy in1 Username
     GetBroadcasterId {Username}
-    # Get Channel Info for the found BroadcasterId
-    Param Copy _TwitchAPI_broadcasterId_found_ BroadcasterId
+    # Do Shoutout via Twitch API
+    Variable Global Load TwitchAPI_broadcasterId_streamer
+    Variable Global Load TwitchAPI_broadcasterId_bot
+    Param Copy _TwitchAPI_Found_BroadcasterId_ BroadcasterId
+    TwitchResetAPIValues
+    List Add _TwitchAPI_Params_ "from_broadcaster_id"
+    List Add _TwitchAPI_Params_ {TwitchAPI_broadcasterId_streamer}
+    List Add _TwitchAPI_Params_ "moderator_id"
+    List Add _TwitchAPI_Params_ {TwitchAPI_broadcasterId_bot}
+    List Add _TwitchAPI_Params_ "to_broadcaster_id"
+    List Add _TwitchAPI_Params_ {BroadcasterId}
+    ExecTwitchAPI "Shoutout" "POST" "chat/shoutouts"
+
+# Retrieves first 100 clips for a Broadcaster, randomly chooses one, and sets into a variable called _TwitchAPI_Found_ClipData_
+OnAction GetRandomTwitchClip
+    # First we have to get the BroadcasterId for whom we want to show a clip
+    Param Copy in1 Username
+    Param Replace Username "@" ""
+    GetBroadcasterId {Username}
+    Param Copy _TwitchAPI_Found_BroadcasterId_ BroadcasterId
+    # Get the first 100 clips
     TwitchResetAPIValues
     List Add _TwitchAPI_Params_ "broadcaster_id"
     List Add _TwitchAPI_Params_ {BroadcasterId}
-    ExecTwitchAPI "Get Channel Info (shoutout)" "GET" "channels"
+    List Add _TwitchAPI_Params_ "first"
+    List Add _TwitchAPI_Params_ "100"
+    ExecTwitchAPI "Random Clips" "GET" "clips"
+    # Randomly select clip info
+    Function 'const clips = {_TwitchAPI_Response_}.data; const clipIdx = Math.floor(clips.length * Math.random()); return { clipData: clips[clipIdx] }'
+    Variable Set _TwitchAPI_Found_ClipData_ [clipData]
 
 # Command to update TokenUpdated time manually
 # The Last Updated Token stores the last date we manually updated the API Tokens from TwitchTokenGenerator
