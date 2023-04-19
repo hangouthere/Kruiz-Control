@@ -14,19 +14,15 @@
 
 # On Init of bot, attempt to get the Broadcaster ID
 OnInit
-    GetMyBroadcasterIds
+    GetMyBroadcasterId
 
-OnAction GetMyBroadcasterIds
+OnAction GetMyBroadcasterId
     TwitchResetAPIValues
     # Exit early if necessary
     Variable Global Load TwitchAPI_broadcasterId_streamer
-    Variable Global Load TwitchAPI_broadcasterId_bot
     If 2 {TwitchAPI_broadcasterId_streamer} = "No variable found"
         GetBroadcasterId {TwitchAPI_StreamerName}
         Variable Global Set TwitchAPI_broadcasterId_streamer {_TwitchAPI_Found_BroadcasterId_}
-    If 2 {TwitchAPI_broadcasterId_bot} = "No variable found"
-        GetBroadcasterId {TwitchAPI_BotName}
-        Variable Global Set TwitchAPI_broadcasterId_bot {_TwitchAPI_Found_BroadcasterId_}
 
 # If unavailable, retrieves the Broadcaster ID and stores in a Global variable
 OnAction GetBroadcasterId
@@ -63,13 +59,12 @@ OnAction TwitchShoutout
     GetBroadcasterId {Username}
     # Do Shoutout via Twitch API
     Variable Global Load TwitchAPI_broadcasterId_streamer
-    Variable Global Load TwitchAPI_broadcasterId_bot
     Param Copy _TwitchAPI_Found_BroadcasterId_ BroadcasterId
     TwitchResetAPIValues
     List Add _TwitchAPI_Params_ "from_broadcaster_id"
     List Add _TwitchAPI_Params_ {TwitchAPI_broadcasterId_streamer}
     List Add _TwitchAPI_Params_ "moderator_id"
-    List Add _TwitchAPI_Params_ {TwitchAPI_broadcasterId_bot}
+    List Add _TwitchAPI_Params_ {TwitchAPI_broadcasterId_streamer}
     List Add _TwitchAPI_Params_ "to_broadcaster_id"
     List Add _TwitchAPI_Params_ {BroadcasterId}
     ExecTwitchAPI "Shoutout" "POST" "chat/shoutouts"
@@ -92,9 +87,23 @@ OnAction GetRandomTwitchClip
     Function 'const clips = {_TwitchAPI_Response_}.data; const clipIdx = Math.floor(clips.length * Math.random()); return { clipData: clips[clipIdx] }'
     Variable Set _TwitchAPI_Found_ClipData_ [clipData]
 
+# Deletes a Message By ID, takes in the `[data]` property of a Command
+# Use [] and not {} when passing in the parameter, because KC will auto JSON-ify parameters
+OnAction TwitchDeleteMessage
+    Variable Global Load TwitchAPI_broadcasterId_streamer
+    Function "return { message_id: {in1}.extra.id }"
+    TwitchResetAPIValues
+    List Add _TwitchAPI_Params_ "broadcaster_id"
+    List Add _TwitchAPI_Params_ {TwitchAPI_broadcasterId_streamer}
+    List Add _TwitchAPI_Params_ "moderator_id"
+    List Add _TwitchAPI_Params_ {TwitchAPI_broadcasterId_streamer}
+    List Add _TwitchAPI_Params_ "message_id"
+    List Add _TwitchAPI_Params_ {message_id}
+    ExecTwitchAPI "Delete Message" "DELETE" "moderation/chat"
+
 # Command to update TokenUpdated time manually
 # The Last Updated Token stores the last date we manually updated the API Tokens from TwitchTokenGenerator
 OnCommand bm 0 !tokenUpdate !updateToken
     Function 'return { now: Date.now() }'
     Variable Global Set _TokensUpdatedAt_ {now}
-    GetMyBroadcasterIds
+    GetMyBroadcasterId

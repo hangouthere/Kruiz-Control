@@ -4,12 +4,11 @@
 ###################################
 # Setup
 #
-# Visit https://twitchtokengenerator.com/ and generate a token with any OAuth Roles you want to use
+# Visit https://twitchtokengenerator.com/ and generate a token with any OAuth Roles you want to use.
+# Be sure to generate the token for your Broadcaster account, so it has the most capabilities (ie, deleting mod messages)
 #
 # Store the following JSON in `./settings/twitch/api_access.json`, with the values given by TwitchTokenGenerator:
 # {
-#   "botUserName": "botName",
-#
 #   "accessToken": "xxx",
 #   "refreshToken": "xxxxxx",
 #   "clientId": "xxx"
@@ -22,7 +21,6 @@
 # them out and explain their intent.
 #
 # TwitchAPI_StreamerName    - Streamer's username
-# TwitchAPI_BotName         - Bot's username
 # _TwitchAPI_Response_      - After an API Request via `ExecTwitchAPI` (or other Actions),
 #                             this will hold the raw HTTP Response
 #
@@ -57,7 +55,6 @@ OnAction LoadTwitchAPIVariables
     Variable Set TwitchAPI_accessToken {accessToken}
     API GET "./settings/twitch/user.txt"
     Variable Set TwitchAPI_StreamerName {api_data}
-    Variable Set TwitchAPI_BotName {botUserName}
     # Check if date was set, and alert user if not
     If 3 {_TokensUpdatedAt_} = "No variable found"
         Error "Token Update time is not set, alerting user via Chat"

@@ -24,6 +24,7 @@ OnAction SetRecipe
 
 # Command for setting the current Menu and *optionally* the first recipe
 OnCommand bm 0 !setMenu
+    TwitchDeleteMessage [data]
     Param Copy arg1 MenuUUID
     Param Copy arg2 RecipeUUID
     SetMenu {MenuUUID}
@@ -33,6 +34,7 @@ OnCommand bm 0 !setMenu
 
 # Command for setting the current Recipe
 OnCommand bm 0 !setRecipe
+    TwitchDeleteMessage [data]
     SetRecipe {arg1}
 
 # Chatter command for showing Menu (if allowed)
@@ -53,6 +55,7 @@ OnCommand e 60 !recipe !showRecipe
 
 # Toggle Cooking Show abilities
 OnCommand bm 0 !cooking
+    TwitchDeleteMessage [data]
     Param Keyword after "on" "yes" "enable"
     if 2 {matched} = true
         Variable Global Set IsCookingShow 1
@@ -65,10 +68,12 @@ OnCommand bm 0 !cooking
 
 # Streamer/Mod Command for showing Menu (auto enables Cooking Show)
 OnCommand bm 0 !mmenu !mshowMenu
+    TwitchDeleteMessage [data]
     Variable Global Set IsCookingShow 1
     OBS Send "ChatShowMenu"
 
 # Streamer/Mod Command for showing Recipe (auto enables Cooking Show)
 OnCommand bm 0 !mrecipe !mshowRecipe
+    TwitchDeleteMessage [data]
     Variable Global Set IsCookingShow 1
     OBS Send "ChatShowRecipe"
