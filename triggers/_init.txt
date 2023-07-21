@@ -1,0 +1,6 @@
+OnInit
+    Debug
+    SetCurrentDateTime
+    SystemSpeak "Ready to Serve"
+    Variable Load _currentDateTime_
+    Chat Send "Ready to Serve! {_currentDateTime_}"

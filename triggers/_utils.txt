@@ -1,0 +1,91 @@
+# System Voice output
+# Example:
+#   SystemSpeak "Hello, how are you, {user}?" 
+OnAction SystemSpeak
+    Param Copy in1 messageToSpeak
+    Param Create SystemVoice "Google UK English Male"
+    TTS {SystemVoice} 10 30 - nowait {messageToSpeak}
+
+# Sets the current system date to a variable for simplified output
+# Example:
+#   SetCurrentDateTime
+#   Variable Load _currentDateTime_
+#   Chat Send "Current Date/Time is: {_currentDateTime_}'
+OnAction SetCurrentDateTime
+    Function 'return { now: new Date().toLocaleString()}'
+    Variable Set _currentDateTime_ {now}
+
+# Read a list, newline separated, into a variable (_listData_) for future use
+# Files are located at: './lists/{fileName}.txt'
+# Example:
+#   ReadListFromDisk greetings
+#   Variable Load _listData_
+OnAction ReadListFromDisk
+    Param Copy in1 fileName
+    Param Exists fileName
+    If 2 {exists} != "true"
+        Error "No FileName given to load!"
+        Exit
+    # Read file and plit into an array of `lines`, and store as a JSON.stringify'd Variable 
+    API GET './lists/{fileName}.txt'
+    Function 'const lines = [api_data].trim().split(/\r\n|\n/); return {lines: lines}'
+    Variable Set _listData_ [lines]
+
+# Import a list read from disk into a named KC List
+# Files are located at: './lists/{fileName}.txt'
+# Example:
+#   ImportListFromDisk greetings Greetings
+#   List Remove Greetings
+#   Chat Send {value}
+OnAction ImportListFromDisk
+    Param Copy in1 fileName
+    Param Copy in2 listName
+    ReadListFromDisk {fileName}
+    Variable Load _listData_
+    List Empty {listName}
+    List Import {listName} {_listData_}
+
+# Check if the incoming user is one we don't want to allow (ie, bots), and set in a variable
+# Files are located at: './lists/{fileName}.txt'
+# Example:
+#   ImportListFromDisk greetings Greetings
+#   List Remove Greetings
+#   Chat Send {value}
+OnAction CheckIgnoredUsers
+    Param Copy user lower_user
+    Param Lower lower_user
+    ImportListFromDisk ignoredUsers _IgnoredUsers_
+    List Contains _IgnoredUsers_ {lower_user}
+    Variable Set _IgnoreCurrentUser_ {contains}
+
+# Compare all values of Array1 to Array2, and store in a List (_CompareArrays_) for easy access
+# Example:
+#   List Export JSONList
+#   CompareArrays [message] {JSONList}
+#   Chat Send "Matched?: {matched} | Word Matched: {word}"
+OnAction CompareArrays
+    Param Copy in1 Array1
+    Param Copy in2 Array2
+    # JavaScript function to iterate both arrays and compare values (lowercased)
+    Function 'const arr1 = {Array1}.split(" "); const arr2 = {Array2}; for (let i = 0; i < arr1.length; i++) { for (let j = 0; j < arr2.length; j++) { if (arr1[i].toLowerCase() === arr2[j].toLowerCase()) { return { matched: true, word: arr1[i] }; } } } return { matched: false, word: "No Match Found" };'
+    # Clear and set the matched/word values in a sacrificial List
+    List Empty _CompareArrays_
+    List Add _CompareArrays_ {matched}
+    List Add _CompareArrays_ {word}
+
+# Chooses a random line from a list on disk, and sets it to `_randomChosen_` to be used later
+OnAction ChooseRandomLineFromFile
+    Param Copy in1 listName
+    List Empty _randomList_
+    ImportListFromDisk {listName} _randomList_
+    List Remove _randomList_
+    Variable Set _randomChosen_ {value}
+
+# Says a random entry from a list on disk
+# Files are located at: './lists/{fileName}.txt'
+# Example:
+#   ChatRandomFromFile greetings
+OnAction ChatRandomFromFile
+    Param Copy in1 listName
+    ChooseRandomLineFromFile {listName}
+    Chat Send {_randomChosen_}

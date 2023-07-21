@@ -1,0 +1,4 @@
+@{user} is a badass! Thanks for your {amount} donation! Their Message: {message}
+@{user} just made it rain {amount}! They said: {message}
+Woah a {amount} donation from @{user} just came in! They said: {message}
+Let's get some DYNO HYPE for @{user}, dropping {amount} on the stream! They said: {message}

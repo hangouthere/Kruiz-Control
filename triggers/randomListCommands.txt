@@ -1,0 +1,93 @@
+####################################################################
+## Actions
+##
+## These Actions are simple handlers to send a random chat message from an explicit file list
+
+OnAction SayDiscord
+    ChatRandomFromFile discord
+
+OnAction SayTwitter
+    ChatRandomFromFile twitter
+
+OnAction SayInstagram
+    ChatRandomFromFile instagram
+
+OnAction SaySupport
+    ChatRandomFromFile interval_support
+
+OnAction SayLurk
+    ChatRandomFromFile lurk
+
+OnAction SayUnLurk
+    ChatRandomFromFile back_responses
+
+OnAction SayBRB
+    ChatRandomFromFile brb_responses
+
+####################################################################
+## Commands
+##
+## These Commands are configured to lightly reduce spamming with a cooldown, and proxy to an Action
+
+OnCommand e 5 !discord !dicord
+    SayDiscord
+
+OnCommand e 5 !twitter !twatter
+    SayTwitter
+
+OnCommand e 5 !instagram !insta !ig
+    SayInstagram
+
+OnCommand e 5 !lurk
+    SayLurk
+
+OnCommand e 5 !unlurk !back back
+    SayUnLurk
+
+OnCommand e 5 !brb brb
+    SayBRB
+
+OnCommand e 5 !support
+    SayInstagram
+    SayTwitter
+    SayDiscord
+
+OnCommand bm 0 !thanksWatch
+    SayInstagram
+    SayTwitter
+    SayDiscord
+    ChatRandomFromFile thanksWatching
+
+####################################################################
+## Keyword Triggers
+##
+## These keywords are similar to their Command counterparts, but will simply operate
+## on a simple keyword match.
+
+OnKeyword e 5 lurk
+    CheckIgnoredUsers
+    Variable Load _IgnoreCurrentUser_
+    if {_IgnoreCurrentUser_} = false
+    SayLurk
+
+OnKeyword e 5 back
+    CheckIgnoredUsers
+    Variable Load _IgnoreCurrentUser_
+    if {_IgnoreCurrentUser_} = false
+    SayUnLurk
+
+OnKeyword e 5 brb
+    CheckIgnoredUsers
+    Variable Load _IgnoreCurrentUser_
+    if {_IgnoreCurrentUser_} = false
+    SayBRB
+
+# Similar to other Keyword Triggers, but will bail early if it detects an "@" in the message
+# in case a user is saying goodnight to another chatter
+OnKeyword e 5 goodnight night nini
+    CheckIgnoredUsers
+    Variable Load _IgnoreCurrentUser_
+    if {_IgnoreCurrentUser_} = false
+    Function 'return { matched: [message].includes("@") }'
+    if {matched} = false
+    ChatRandomFromFile goodnight

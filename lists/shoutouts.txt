@@ -1,0 +1,8 @@
+Let's show some love for @{display_name}! We think they're great, and so should you! Go give them a follow!
+Look, it's @{display_name}! Do yourself a favor and give them a follow!
+If you're not following @{display_name} already, you're missing out!
+@{display_name} is showing love, so let's show some back! Give them a follow right meow!
+Following @{display_name} was one of the best decisions we've made, and you should too!
+We just wanted to give a quick shoutout to @{display_name}. They always put a smile on my face with their attitude and awesome content.
+If you love {game_name}, then you have to check out @{display_name}. You won't be disappointed!
+If you're into {game_name}, then you can't miss out on @{display_name}'s streams. They're always providing top-notch entertainment!

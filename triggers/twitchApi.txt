@@ -1,0 +1,165 @@
+####################################################################
+# Twitch API Methods
+#
+###################################
+# Setup
+#
+# Visit https://twitchtokengenerator.com/ and generate a token with any OAuth Roles you want to use.
+# Be sure to generate the token for your Broadcaster account, so it has the most capabilities (ie, deleting mod messages)
+#
+# Store the following JSON in `./settings/twitch/api_access.json`, with the values given by TwitchTokenGenerator:
+# {
+#   "accessToken": "xxx",
+#   "refreshToken": "xxxxxx",
+#   "clientId": "xxx"
+# }
+#
+##################################
+# Common Variables to Know
+#
+# There are a few variables used within these Actions that you will use somewhat frequently, so I wanted to point
+# them out and explain their intent.
+#
+# TwitchAPI_StreamerName    - Streamer's username
+# _TwitchAPI_Response_      - After an API Request via `ExecTwitchAPI` (or other Actions),
+#                             this will hold the raw HTTP Response
+#
+##################################
+# Making a Twitch API Request
+#
+# It's important you take a look at the comments above the `ExecTwitchAPI` to ensure you populate the proper Lists.
+# These will be processed accordingly to make API Requests.
+#
+##################################
+# API Helpers
+#
+# Along with these Actions, I've created some Helpers which can be found in `twitchApi_helpers`, so be sure to read
+# the comments/documentation there, as there are more variables and examples found within.
+#
+
+# Loads the Twitch API Access JSON and stores in variables
+OnAction LoadTwitchAPIVariables
+    # Only complain about missing config once per bot load
+    Variable Load _TwitchAPI_Missing_Config_
+    If 1 {_TwitchAPI_Missing_Config_} != "No variable found"
+        Exit
+    API GET "./settings/twitch/api_access.json"
+    If 4 {api_data} = "error"
+        Variable Set _TwitchAPI_Missing_Config_ 1
+        Error "Missing './settings/twitch/api_access.json', can't use Twitch APIs. Fix this, and restart the bot!"
+        Chat Send "Missing './settings/twitch/api_access.json', can't use Twitch APIs. Fix this, and restart the bot!"
+        Exit
+    Function "return [api_data];"
+    Variable Global Load _TokensUpdatedAt_
+    Variable Set TwitchAPI_clientID {clientId}
+    Variable Set TwitchAPI_accessToken {accessToken}
+    API GET "./settings/twitch/user.txt"
+    Variable Set TwitchAPI_StreamerName {api_data}
+    # Check if date was set, and alert user if not
+    If 3 {_TokensUpdatedAt_} = "No variable found"
+        Error "Token Update time is not set, alerting user via Chat"
+        Chat Send "@{TwitchAPI_StreamerName} - You need to run !tokenUpdate to track expiration time"
+        Exit
+
+# Checks Token Expiry time as per the _TokensUpdatedAt_ variable against:
+#   - Existance: If missing, tell the user!
+#   - >=55 Days: Warn it will expire soon!
+#   - >=60 Days: Warn it has fully expired!
+OnAction CheckTokenExpiryTime
+    LoadTwitchAPIVariables
+    # Evaluate Days elapsed since updated, and warn user the need to update
+    Function 'const dateDiff = Date.now() - {_TokensUpdatedAt_}; return { ElapsedDays: Math.floor(dateDiff / 1000 / 60 / 60 / 24) };'
+    # If >= 60 days, tell the streamer it's expired
+    If 4 {ElapsedDays} >= 60
+        Variable Remove TwitchAPI_accessToken
+        Error "Your API Token is now {ElapsedDays} days old, and fully expired. Renew at https://twitchtokengenerator.com/ and save in your JSON file, then run !tokenUpdate"
+        Chat Send "@{TwitchAPI_StreamerName} - Your API Token is now {ElapsedDays} days old, and fully expired. Renew at https://twitchtokengenerator.com/ and save in your JSON file, then run !tokenUpdate"
+        Exit
+    # If >= 55 days, tell the streamer it's going to expire soon
+    If 1 {ElapsedDays} >= 55
+        Chat Send "@{TwitchAPI_StreamerName} - Your API Token is {ElapsedDays} days old, almost expired. Renew at https://twitchtokengenerator.com/ and save in your JSON file, then run !tokenUpdate"
+
+# Resets all Twitch API values in the KC API
+OnAction TwitchResetAPIValues
+    List Empty _TwitchAPI_
+    List Empty _TwitchAPI_Params_
+    List Empty _TwitchAPI_Body_
+
+# Performs a Twitch API Request
+# There are 3 parameters to pass into this action:
+# 1) Name of the request: Used in error messages to make it clear what is failing
+# 2) HTTP Method: GET/POST/PATCH/PUT, whatever the Twitch API requires
+# 3) Endpoint URI: The part after the API base. i.e., "users" or "channels"
+#
+# There are 2 KC Lists that may be populated
+# (Optional) List _TwitchAPI_Params_ - Add Key and Values one after another to build query parameters
+# (Optional) List _TwitchAPI_Body_ - Add Key and Values one after another to build POST/PATCH/PUT body data
+#
+# Before populating these lists, be sure to call `TwitchResetAPIValues` to ensure they're empty or you may have
+# extra/wrong Query Parameters or Body Data when making requests.
+#
+# Upon completion of the Action, the `_TwitchAPI_Response_` Variable will be set with the response if there wasn't an Error
+# If the response was empty, it mimics that of the KC API response values ("success"/"error")
+OnAction ExecTwitchAPI
+    # Get the Request Name, HTTP Method, and Endpoint URI
+    Variable Set _TwitchAPI_RequestName_ {in1}
+    Param Copy in2 HTTPMethod
+    Param Copy in3 Endpoint
+    # Set us up the API
+    API Clear _TwitchAPI_
+    LoadTwitchAPIVariables
+    # Build Params or Body Data
+    TwitchBuildParams
+    TwitchBuildBody
+    # Set URI & common Headers
+    API Url _TwitchAPI_ "https://api.twitch.tv/helix/{Endpoint}{_TwitchAPI_Params_}"
+    API Method _TwitchAPI_ {HTTPMethod}
+    API Header _TwitchAPI_ "Client-ID" "{TwitchAPI_clientID}"
+    API Header _TwitchAPI_ "Authorization" "Bearer {TwitchAPI_accessToken}"
+    # Send Request and Evaluate Response!
+    API Send _TwitchAPI_
+    TwitchAPIEvaluateResponse [api_data]
+
+# Loop through the `_TwitchAPI_Params_` List and build params as a string
+OnAction TwitchBuildParams
+    Variable Clear _TwitchAPI_Params_ ""
+    List Count _TwitchAPI_Params_
+    If 1 {count} = 0
+        Skip 9
+    Param Create QueryParams "?"
+    Function 'return { numParams: {count}/2 }'
+    Loop 5 {numParams}
+        List Remove _TwitchAPI_Params_ First
+        Param Create URIParam {value}
+        List Remove _TwitchAPI_Params_ First
+        Param Create URIValue {value}
+        Param Create QueryParams "{QueryParams}{URIParam}={URIValue}&"
+    Variable Set _TwitchAPI_Params_ {QueryParams}
+
+# Loop through the `_TwitchAPI_Body_` List and add to the API call with KC API
+OnAction TwitchBuildBody
+    List Count _TwitchAPI_Body_
+    If 1 {count} = 0
+        Skip 7
+    Function 'return { numParams: {count}/2 }'
+    Loop 5 {numParams}
+        List Remove _TwitchAPI_Body_ First
+        Param Create BodyParam {value}
+        List Remove _TwitchAPI_Body_ First
+        Param Create BodyValue {value}
+        API Data _TwitchAPI_ {BodyParam} {BodyValue}
+
+# Evaluates the Twitch API Response for success/error and data value
+OnAction TwitchAPIEvaluateResponse
+    Param Copy in1 IncomingResponse
+    Variable Set _TwitchAPI_Response_ {IncomingResponse}
+    # Normalize success/error values to simple strings instead of JSON-ified strings
+    If 1 {IncomingResponse} = '"success"'
+        Variable Set _TwitchAPI_Response_ "success"
+    If 2 {IncomingResponse} = '"error"'
+        Variable Set _TwitchAPI_Response_ "error"
+        Chat Send "API Failed for {_TwitchAPI_RequestName_}, check OBS Log for more details!"
+
+# Simple check for token expiry every hour
+OnTimer CheckTokenExpiryTime 3600
+    CheckTokenExpiryTime
