@@ -1,0 +1,5 @@
+@{name} has broken bread and shared their community with us. Thanks for showing the love! Welcome to all {raiders} raiders!
+Look at @{name} coming in with the {raiders}-person raid! Give them some love back!
+Yoooo @{name} thank you for choosing to raid us with your {raiders} viewers, out of everyone else on Twitch!
+Whoa-ho-hoooo, I don't know what @{name}'s {raiders} viewers did to deserve this, but thanks for the raid!
+YAY! A Raid from @{name}! Quick - grab {raiders} chairs, and everyone can kick back with us!

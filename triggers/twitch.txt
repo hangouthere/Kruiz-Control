@@ -1,0 +1,66 @@
+####################################################################
+# Twitch Commands
+#
+
+OnInit
+    # Set Browser Source name for Twitch Embeds (ie, clips, stream preview, etc)
+    Variable Set _OBS_Embed_Source_ "Twitch Embed Browser Source"
+
+# Say a Shoutout Aloud
+OnAction ShoutoutVoice
+    Param Copy in1 messageToSpeak
+    Param Create Voice "Google UK English Female"
+    Param Replace messageToSpeak '@' ''
+    TTS {Voice} - - - nowait {messageToSpeak}
+
+# Using KC, gets top 100 clips, and picks one by random, returning the API response data as variables
+# See: https://dev.twitch.tv/docs/api/reference/#get-clips
+OnAction GetRandomTwitchClip
+    Param Copy in1 Username
+    Param Replace Username "@" ""
+    Twitch ClipsByUser {Username} 100
+    Function 'const clipList = [data].data; return clipList[Math.floor(Math.random() * clipList.length)];'
+
+# Displays a random clip of a Broadcaster in OBS
+# Note: Utilizes a Filter that does a Fade In/Out with Advanced Scene Switcher's Move Value
+OnAction PlayRandomTwitchClip
+    # First we have to get the BroadcasterId for whom we want to show a clip
+    Param Copy in1 Username
+    GetRandomTwitchClip {Username}
+    Variable Load _OBS_Embed_Source_
+    OBS Source {_OBS_Embed_Source_} URL "https://clips.twitch.tv/embed?autoplay=true&clip={id}&controls=false&parent=localhost"
+    Delay 1.5
+    OBS Source {_OBS_Embed_Source_} Filter "Fade In" on
+    Delay {duration}
+    OBS Source {_OBS_Embed_Source_} Filter "Fade Out" on
+    Delay 5
+    OBS Source {_OBS_Embed_Source_} URL "about:blank"
+
+# Copies a Twitch Reward
+OnCommand b 0 !twitchCopy
+    Twitch Copy {after}
+
+# PretzelRocks messages are auto-deleted, because we hate seeing them!
+OnEveryChatMessage
+    If {user} = "PretzelRocks"
+    Twitch DeleteMessage {message_id}
+    Exit
+
+# Perform a Shoutout in Chat and TwitchAPI
+# Supports @username and username alike!
+OnCommand bm 0 !so !shoutout
+    Param Copy after ShoutoutUser
+    Param Replace ShoutoutUser "@" ""
+    # If the Twitch User is invalid, KC will bomb exit here and not continue
+    Twitch User {ShoutoutUser}
+    Twitch ChannelInfo {ShoutoutUser}
+    ChooseRandomLineFromFile "shoutouts"
+    Twitch Shoutout {ShoutoutUser}
+    Twitch Announcement "{_randomChosen_} They were last seen doing some {game} - {title}" orange
+    Clip data comes from a previous API call (PlayRandomTwitchClip -> GetRandomTwitchClip -> Twitch ClipsByUser -> Function)
+    PlayRandomTwitchClip {ShoutoutUser}
+    Chat Send "Clip : {title}, clipped by {creator_name} ({duration}s) [ Link: {url} ]"
+    ShoutoutVoice {_randomChosen_}
+
+OnTWChannelPoint "Light Me Up"
+    LightSolid "{message}" "60000"

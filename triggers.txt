@@ -1,5 +1,6 @@
-OnInit
-Chat Send "Kruiz Control Initialized"
+OnCommand b 0 !twitchAuth
+Twitch Authenticate
+Error {auth_url}
 
 OnCommand b 0 !example
 Chat Send "Success! It worked!"

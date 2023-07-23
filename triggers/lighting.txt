@@ -1,0 +1,72 @@
+####################################################################
+## Lighting Actions
+
+# Parses color based on input, or returns `{ error: true }` if it couldn't properly parse.
+# This uses `parse-color`, which should be injected `OnInit`
+OnAction ParseColor
+    Param Copy in1 color
+    Param Lower color
+    Function 'const parsed = culori.converter("rgb")([color]); return !parsed ? {error:true} : {color_r: parsed.r*255, color_g: parsed.g*255, color_b: parsed.b*255 };'
+
+OnAction ProcessColorRequest
+    ParseColor {color}
+    Error "RGB Color Parsed: {color_r}, {color_g}, {color_b}"
+    If 3 {error} = true
+        Chat Send "Sorry @{name}, you need to use a valid HTML Color! You've been refunded your points. [See: htmlcolorcodes.com | culorijs.org/api]"
+        Twitch Reject {reward_id} {redemption_id}
+        Exit
+    Twitch Complete {reward_id} {redemption_id}
+
+# This action takes up to 3 arguments, which will "Flicker" the light up and down
+# based on the arguments passed in.
+#
+# Arguments:
+# Color - A hexadecimal color value to set the color of the bulb
+# (Optional) Delay - How long between brightness settings to wait to pulse (Default = 500)
+# (Optional) Repeat - How many times to pulse (Default = 5)
+OnAction LightFlick
+    Param Copy in1 color
+    Param Copy in2 delay
+    Param Copy in3 repeat
+    Param Create idx 1
+    Loop 2 3
+        Function "return { 'in{idx}_exists': '{in{idx}}' !== '{arg' + '{idx}}' };"
+        Param Add idx 1
+    If 2 {in1_exists} = false
+        Chat Send "You must supply a color"
+        Exit
+    If 1 {in2_exists} = false
+        Param Create delay 500
+    If 1 {in3_exists} = false
+        Param Create repeat 5
+    ProcessColorRequest {color}
+    API Clear _LightFlick_
+    API Method _LightFlick_ "POST"
+    API URL _LightFlick_ "https://homeassistant.nfgarmy.com/api/webhook/light_stream_flash?device=codex&color_r={color_r}&color_g={color_g}&color_b={color_b}&delay={delay}&repeat={repeat}"
+    API Send _LightFlick_
+
+OnAction LightSolid
+    Param Copy in1 color
+    Param Copy in2 duration
+    Param Create idx 1
+    Loop 2 3
+        Function "return { 'in{idx}_exists': '{in{idx}}' !== '{arg' + '{idx}}' };"
+        Param Add idx 1
+    If 2 {in1_exists} = false
+        Chat Send "You must supply a color"
+        Exit
+    If 1 {in2_exists} = false
+        Param Create duration 10000
+    ProcessColorRequest {color}
+    API Clear _LightSolid_
+    API Method _LightSolid_ "POST"
+    API URL _LightSolid_ "https://homeassistant.nfgarmy.com/api/webhook/light_stream_solid?device=codex&color_r={color_r}&color_g={color_g}&color_b={color_b}&duration={duration}"
+    API Send _LightSolid_
+
+OnAction TwitchEvent_Lighting
+    Param Copy in1 color
+    LightFlick "{color}" "300" "5"
+
+# Command for Broadcaster and Mods to set the color value
+OnCommand bm 0 !light
+    LightFlick "{arg1}" "{arg2}" "{arg3}"

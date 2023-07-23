@@ -1,1 +1,15 @@
-sample.txt
+_utils.txt
+_init.txt
+greetings.txt
+lols.txt
+randomListCommands.txt
+interval_support.txt
+misc.txt
+uptime.txt
+
+lighting.txt
+
+stream_events.txt
+twitch.txt
+
+tts.txt

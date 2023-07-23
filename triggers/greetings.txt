@@ -1,0 +1,22 @@
+OnAction GreetingSpeak
+    Param Copy in1 messageToSpeak
+    Param Create Voice "Google UK English Female"
+    Param Replace messageToSpeak '@' ''
+    TTS {Voice} - - - nowait {messageToSpeak}
+
+# On every incoming message, check for common greetings and respond both in chat and TTS with
+# a randomized response!
+# Ignores known IgnoredUsers to avoid infinite loops
+OnEveryChatMessage
+    CheckIgnoredUsers
+    Variable Load _IgnoreCurrentUser_
+    if {_IgnoreCurrentUser_} = false
+    # Check for a List Match in the incoming [message]
+    ReadListFromDisk greetings_prompts
+    CompareArrays [message] {_listData_}
+    # If we didn't match, bail out
+    List Get _CompareArrays_ First
+    if {value} != false
+    # Say Hi by copying our Response file
+    ChatRandomFromFile greetings_responses
+    GreetingSpeak {_randomChosen_}

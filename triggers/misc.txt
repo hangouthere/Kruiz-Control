@@ -1,0 +1,13 @@
+# Gets and outputs the current date/time to chat
+OnCommand e 60 !time !date
+    SetCurrentDateTime
+    Chat Send "The Current for @CodexHere time is: {_currentDateTime_}"
+
+# Silly ^ command
+OnCommand e 5 ^ ^^
+    Chat Send {command}
+
+# Reset Kruiz Control
+OnCommand bm 0 !kcreset
+    OBS Send "kcreset"
+    Reset

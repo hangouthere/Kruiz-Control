@@ -1,0 +1,44 @@
+####################################################################
+## Stream Event Triggers
+##
+## These are events during stream, such as Bits, Follows, Subs, etc
+
+# Action for when a tip is recieved, which will respond both in chat and TTS with
+# a randomized response
+OnAction TipRecieved
+    Param Copy in1 user
+    Param Copy in2 amount
+    TwitchEvent_Lighting #00FF00
+    AnnounceRandomFromFile thanksDono green
+
+#########################################
+# StreamLabs
+
+# When Donations are recieved, we call `TipRecieved` with the pertinent parameters
+OnSLDonationNoSync
+    TipRecieved {user} {formatted}
+
+#########################################
+# Twitch
+
+# When Bits are recieved, we call `TipRecieved` with the pertinent parameters
+OnTWCheer
+    TipRecieved {name} "{amount} Bits"
+
+OnTWSub
+    TwitchEvent_Lighting #00FF00
+    AnnounceRandomFromFile thanksSub green
+
+OnTWSubGift
+    TwitchEvent_Lighting #00FF00
+    AnnounceRandomFromFile thanksSubGift green
+
+# When a User Follows, we thank them with a randomized response
+OnTWFollow
+    TwitchEvent_Lighting #FF8A3B
+    AnnounceRandomFromFile thanksFollow orange
+
+# When a Streamer Raids, we thank them with a randomized response
+OnTWRaid
+    TwitchEvent_Lighting #6441a5
+    AnnounceRandomFromFile thanksRaid purple

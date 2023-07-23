@@ -1,0 +1,14 @@
+# On every incoming message, check for common LOL-type values and respond both in chat!
+# Ignores known IgnoredUsers to avoid infinite loops
+OnEveryChatMessage
+    CheckIgnoredUsers
+    Variable Load _IgnoreCurrentUser_
+    if {_IgnoreCurrentUser_} = false
+    # Check for a List Match in the incoming [message]
+    ReadListFromDisk lol_prompts
+    CompareArrays [message] {_listData_}
+    # If we didn't match, bail out
+    List Get _CompareArrays_ First
+    if {value} != false
+    # Say Hi by copying our Response file
+    ChatRandomFromFile lol_responses

@@ -1,0 +1,4 @@
+@{name} is a badass! Thanks for your subscribing!
+Yo! @{name} just made the best decision ever and subscribed!
+Enjoy the new Emotes, @{name}, you deserve them!
+We just got a new subscriber! Let's all give a warm welcome to @{name}!

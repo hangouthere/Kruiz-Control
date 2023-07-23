@@ -1,0 +1,5 @@
+Woah! @{name} is gifting {amount}x Tier {tier} Subs! That brings the total to {total_gifts}! They Freakin rock!
+Here comes @{name} gifting {amount}x Tier {tier} Subs! You've already gifted {total_gifts}, so thanks for the continued support!
+Everyone, thank @{name} for gifting {amount}x Tier {tier} Subs!
+If you just got a gifted Tier {tier} Sub from @{name}, be sure to thank them!
+Holy cow! I can't believe @{name} has already gifted {total_gifts} subs, and just gave out {amount}x more Tier {tier} Subs!

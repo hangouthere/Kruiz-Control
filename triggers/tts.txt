@@ -1,0 +1,12 @@
+OnCommand bm 0 !voiceTest
+    TTS Voices _MyVoices_
+    List Count _MyVoices_
+    Loop 3 {count}
+        List Remove _MyVoices_ 0
+        Chat Send "Testing voice: {value}"
+        TTS {value} 10 30 - wait "Testing voice: {value}"
+
+OnCommand bm 0 !voices
+    TTS Voices _MyVoices_
+    List Join _MyVoices_ ", "
+    Chat Send [{joined}]
