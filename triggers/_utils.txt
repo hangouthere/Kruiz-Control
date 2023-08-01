@@ -17,7 +17,7 @@ OnAction SetCurrentDateTime
 
 # Injects an ESM script tag, which loads an ESM via URL, and assigns to a named global to be used in future `Function`s
 # Example:
-#   InjectScriptTag "parseColor" "https://esm.sh/parse-color"
+#   InjectScriptTag "parseColor" "https://esm.sh/parse-color" <useImportAsNamespace:boolean>
 OnAction InjectScriptTag
     Param Copy in1 globalName
     Param Copy in2 scriptURL

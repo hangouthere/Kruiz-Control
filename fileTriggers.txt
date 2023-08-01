@@ -1,5 +1,4 @@
 _utils.txt
-_init.txt
 greetings.txt
 lols.txt
 randomListCommands.txt
@@ -13,3 +12,5 @@ stream_events.txt
 twitch.txt
 
 tts.txt
+
+_init.txt

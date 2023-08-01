@@ -1,8 +1,10 @@
+# Global Setup
 OnInit
     #Debug
     InjectScriptTag "culori" "https://esm.sh/culori" true
     SetCurrentDateTime
-    #SystemSpeak "Ready to Serve"
+
+# Announce Started
+OnInit
     Variable Load _currentDateTime_
-    #Chat Send "Ready to Serve! {_currentDateTime_}"
     Error "Ready to Serve! {_currentDateTime_}"

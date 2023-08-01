@@ -5,6 +5,9 @@
 OnInit
     # Set Browser Source name for Twitch Embeds (ie, clips, stream preview, etc)
     Variable Set _OBS_Embed_Source_ "Twitch Embed Browser Source"
+    # Reset state of Shoutout Browser Source
+    OBS Source {_OBS_Embed_Source_} Filter "Fade Out" on
+    OBS Source {_OBS_Embed_Source_} URL "about:blank"
 
 # Say a Shoutout Aloud
 OnAction ShoutoutVoice
@@ -28,7 +31,15 @@ OnAction PlayRandomTwitchClip
     Param Copy in1 Username
     GetRandomTwitchClip {Username}
     Variable Load _OBS_Embed_Source_
+    # If no {id} is found, that means no clip was returned, and we should prematurely exit the trigger (default IF action)
+    Param Exists id
+    if 1 true = {exists}
+        ShowTwitchClip
+
+# Shows last loaded Twitch Clip Information
+OnAction ShowTwitchClip
     OBS Source {_OBS_Embed_Source_} URL "https://clips.twitch.tv/embed?autoplay=true&clip={id}&controls=false&parent=localhost"
+    Chat Send "Clip : {title}, clipped by {creator_name} ({duration}s) [ Link: {url} ]"
     Delay 1.5
     OBS Source {_OBS_Embed_Source_} Filter "Fade In" on
     Delay {duration}
@@ -46,10 +57,13 @@ OnEveryChatMessage
     Twitch DeleteMessage {message_id}
     Exit
 
+OnTWChannelPoint "Light Me Up"
+    LightSolid "{message}" "60000"
+
 # Perform a Shoutout in Chat and TwitchAPI
 # Supports @username and username alike!
-OnCommand bm 0 !so !shoutout
-    Param Copy after ShoutoutUser
+OnAction TwitchShoutOut
+    Param Copy in1 ShoutoutUser
     Param Replace ShoutoutUser "@" ""
     # If the Twitch User is invalid, KC will bomb exit here and not continue
     Twitch User {ShoutoutUser}
@@ -57,10 +71,39 @@ OnCommand bm 0 !so !shoutout
     ChooseRandomLineFromFile "shoutouts"
     Twitch Shoutout {ShoutoutUser}
     Twitch Announcement "{_randomChosen_} They were last seen doing some {game} - {title}" orange
-    Clip data comes from a previous API call (PlayRandomTwitchClip -> GetRandomTwitchClip -> Twitch ClipsByUser -> Function)
+    # Clip data comes from a previous API call (PlayRandomTwitchClip -> GetRandomTwitchClip -> Twitch ClipsByUser -> Function)
     PlayRandomTwitchClip {ShoutoutUser}
-    Chat Send "Clip : {title}, clipped by {creator_name} ({duration}s) [ Link: {url} ]"
     ShoutoutVoice {_randomChosen_}
 
-OnTWChannelPoint "Light Me Up"
-    LightSolid "{message}" "60000"
+# Do a ShoutOut and set up a Raid
+OnAction RaidStream
+    Param Copy in1 stream
+    TwitchShoutOut {stream}
+    Twitch Raid {stream}
+
+OnCommand bm 0 !so !shoutout
+    TwitchShoutOut {after}
+
+OnCommand bm 0 !raid
+    RaidStream {after}
+
+# Pick a Stream currently online that is streaming the same game as Me
+OnCommand bm 0 !randomRaid
+    Twitch ChannelInfo
+    Param Copy game MyGame
+    Twitch Streams
+    if 2 {stream_count} = 0
+        Chat Send "No Friends are streaming at this moment."
+        Exit
+    Param Create i 1
+    List Empty CurrentStreamers
+    Loop 3 {stream_count}
+        if 1 {MyGame} = {game{i}}
+            List Add CurrentStreamers {stream{i}}
+        Param Add i 1
+    List Count CurrentStreamers
+    if 2 {count} = 0
+        Chat Send "No Friends are streaming at this moment."
+        Exit
+    List Get CurrentStreamers
+    RaidStream {value}
