@@ -1,0 +1,11 @@
+OnCommand e 60 !socials
+    SayDiscord
+    SayTwitter
+    SayInstagram
+
+OnCommand e 10 !gh !goldenhammer
+    Chat Send "GoldenHammer is a platform service meant to tie other platforms together in a consistent manner. This means you can operate across platforms like Twitch, Discord, and even in games through RCON to build tooling for commands, overlays, and anything you can think of!"
+
+
+OnCommand b 0 !wos
+    OBS Source "Words on Stream" URL "{after}"

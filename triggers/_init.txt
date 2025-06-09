@@ -1,6 +1,6 @@
 # Global Setup
 OnInit
-    #Debug
+    # Debug
     InjectScriptTag "culori" "https://esm.sh/culori" true
     SetCurrentDateTime
 

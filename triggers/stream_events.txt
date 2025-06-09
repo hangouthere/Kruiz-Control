@@ -3,6 +3,9 @@
 ##
 ## These are events during stream, such as Bits, Follows, Subs, etc
 
+OnInit
+    Discord Create "StreamStarted" https://discord.com/api/webhooks/1140697679542886600/xo_pBtinVsjJ6bfwZiUik2XRcSx2xUlUgEN5nXgmXw-joJPCWM1mgmWmTU2to8l4i8qw
+
 # Action for when a tip is recieved, which will respond both in chat and TTS with
 # a randomized response
 OnAction TipRecieved
@@ -42,3 +45,21 @@ OnTWFollow
 OnTWRaid
     TwitchEvent_Lighting #6441a5
     AnnounceRandomFromFile thanksRaid purple
+
+OnCommand bm 0 !testLighting
+    TwitchEvent_Lighting #FF8A3B
+
+OnAction StreamStarted
+    Twitch ChannelInfo CodexHere
+    Discord Title "StreamStarted" "Codex is LIVE on Twitch!"
+    Discord Description "StreamStarted" "Codex is LIVE on Twitch! Join up and say Hi!"
+    Discord Url "StreamStarted" "https://twitch.tv/CodexHere"
+    Discord Message "StreamStarted" "@everyone Codex is streaming! {title}"
+    Discord Send "StreamStarted"
+
+OnOBSStreamStarted
+    StreamStarted
+
+OnCommand b 0 !test
+    StreamStarted
+    Chat Send "Blah"

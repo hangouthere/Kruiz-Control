@@ -10,6 +10,7 @@ lighting.txt
 
 stream_events.txt
 twitch.txt
+twitch_commands.txt
 
 tts.txt
 
